@@ -1,0 +1,16 @@
+# go run . (spike 001), 2026-11-07T14:55:19Z, go version go1.24.7 linux/amd64, 2 CPUs, colly v2.3.0
+{
+  "clean": "Robotics is the interdisciplinary study and practice of the design, construction, operation, and use of robots. It combines several fields.\nHistory\nEarly automata date to antiquity.\nMechanical engineering\nComputer science\nReferences",
+  "clean_chars": 232,
+  "raw": ".mw-parser-output .hatnote{font-style:italic} For other uses, see Robotics (disambiguation). FieldEngineering Robotics is the interdisciplinary study and practice of the design, construction, operation, and use of robots.[1] It combines several fields. History[edit] Early automata date to antiquity.[2] Mechanical engineeringComputer science Robotics navbox: Outline Glossary Index References Smith, J. (2020). Robots.",
+  "raw_chars": 419,
+  "title": "Robotics"
+}
+pages=12 elapsed=164ms (12 pages x 50ms; serial would be ~600ms)
+peak concurrent server requests=4 (limit 4); peak concurrent callbacks=4
+goroutines before=2 after=2
+UA seen by server: "colly - https://github.com/gocolly/colly"
+
+# Reachability from Claude's workspace
+curl: (56) CONNECT tunnel failed, response 403
+000

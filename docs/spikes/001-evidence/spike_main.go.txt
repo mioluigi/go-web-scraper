@@ -1,0 +1,83 @@
+// Spike 001: Colly v2.3.0 against a Wikipedia-shaped fixture served locally.
+// Questions: (1) what does a Scrapy-style "all text under #mw-content-text" give?
+// (2) what does a cleaned extraction give? (3) do async callbacks run concurrently
+// (so output needs a single writer)? (4) does Limit bound parallelism? (5) leaks?
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"regexp"
+	"runtime"
+	"strings"
+	"sync"
+	"sync/atomic"
+	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/gocolly/colly/v2"
+)
+
+var spaces = regexp.MustCompile(`\s+`)
+
+func normalize(s string) string { return strings.TrimSpace(spaces.ReplaceAllString(s, " ")) }
+
+func main() {
+	page, _ := os.ReadFile("fixtures/robotics.html")
+	var inFlight, peak int64
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		n := atomic.AddInt64(&inFlight, 1)
+		for { p := atomic.LoadInt64(&peak); if n <= p || atomic.CompareAndSwapInt64(&peak, p, n) { break } }
+		time.Sleep(50 * time.Millisecond) // simulated network latency
+		atomic.AddInt64(&inFlight, -1)
+		fmt.Fprintf(os.Stderr, "UA seen by server: %q\n", r.UserAgent())
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		w.Write(page)
+	}))
+	defer srv.Close()
+
+	before := runtime.NumGoroutine()
+	c := colly.NewCollector(colly.Async(true))
+	c.Limit(&colly.LimitRule{DomainGlob: "*", Parallelism: 4})
+
+	var callbacksNow, callbacksPeak int64
+	var mu sync.Mutex
+	results := map[string]map[string]any{}
+	c.OnHTML("html", func(e *colly.HTMLElement) {
+		n := atomic.AddInt64(&callbacksNow, 1)
+		for { p := atomic.LoadInt64(&callbacksPeak); if n <= p || atomic.CompareAndSwapInt64(&callbacksPeak, p, n) { break } }
+		time.Sleep(10 * time.Millisecond)
+		defer atomic.AddInt64(&callbacksNow, -1)
+
+		raw := normalize(e.DOM.Find("#mw-content-text").Text()) // Scrapy //text() equivalent
+		body := e.DOM.Find("#mw-content-text .mw-parser-output").Clone()
+		body.Find("style, script, sup.reference, .mw-editsection, .navbox, .reflist, .hatnote, table.infobox, meta").Remove()
+		var paras []string
+		body.Find("p, li, h2, h3, h4").Each(func(_ int, s *goquery.Selection) {
+			if t := normalize(s.Text()); t != "" { paras = append(paras, t) }
+		})
+		mu.Lock()
+		results[e.Request.URL.String()] = map[string]any{
+			"title": normalize(e.DOM.Find("h1#firstHeading").Text()),
+			"raw_chars": len(raw), "raw": raw,
+			"clean_chars": len(strings.Join(paras, "\n")), "clean": strings.Join(paras, "\n"),
+		}
+		mu.Unlock()
+	})
+	start := time.Now()
+	for i := 0; i < 12; i++ { c.Visit(fmt.Sprintf("%s/wiki/Page_%d", srv.URL, i)) }
+	c.Wait()
+	elapsed := time.Since(start)
+	srv.CloseClientConnections()
+	time.Sleep(200 * time.Millisecond)
+
+	one := results[srv.URL+"/wiki/Page_0"]
+	out, _ := json.MarshalIndent(one, "", "  ")
+	fmt.Println(string(out))
+	fmt.Printf("pages=%d elapsed=%v (12 pages x 50ms; serial would be ~600ms)\n", len(results), elapsed.Round(time.Millisecond))
+	fmt.Printf("peak concurrent server requests=%d (limit 4); peak concurrent callbacks=%d\n", peak, callbacksPeak)
+	fmt.Printf("goroutines before=%d after=%d\n", before, runtime.NumGoroutine())
+}

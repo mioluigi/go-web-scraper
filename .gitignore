@@ -1,0 +1,19 @@
+# Build output
+/go-web-scraper
+/go-web-scraper.exe
+/dist/
+*.test
+*.prof.tmp
+
+# Development cache of fetched pages (FR-9)
+/.cache/
+
+# Workspace-only module overrides (never committed)
+go.work
+go.work.sum
+
+# macOS and editors
+.DS_Store
+.idea/
+.vscode/
+*.swp

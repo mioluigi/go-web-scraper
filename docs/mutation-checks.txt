@@ -12,3 +12,8 @@ SURVIVED ❌ | crawler/crawler.go: 'transport.CloseIdleConnections()' → ''  �
 caught ✅ | crawler/crawler.go: '	mu.Lock()' → '	'
 caught ✅ | main.go: 'return exitPagesFailed$' → 'return exitOK'
 caught ✅ | urllist/urllist.go: 'if seen\[text\] {' → 'if false {'
+
+# 2026-11-08, after the real pages arrived (T02)
+caught ✅ | extract/wikipedia.go: sectioned back-matter removal disabled ('section.Remove()' → '_ = section') — caught by the synthetic sectioned fixture AND the saved-pages test ("back-matter section kept: See also")
+caught ✅ | extract/text.go: block separator removed — caught by the new boundary-based glued-words check on the saved pages
+caught ✅ | extract/wikipedia.go: '"sup.reference", ' removed — still caught

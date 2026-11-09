@@ -65,19 +65,31 @@ func replaceMathWithPlainText(article *goquery.Selection) {
 
 var htmlEscaper = strings.NewReplacer("&", "&amp;", "<", "&lt;", ">", "&gt;")
 
-// removeBackMatter deletes back-matter sections from the article's top level.
-// MediaWiki marks a top-level heading as <div class="mw-heading mw-heading2">
-// around an <h2> (current markup) or as a bare <h2> (older markup).
+// removeBackMatter deletes the back-matter sections. Wikipedia serves two
+// shapes of markup, and the saved pages use the first:
+//   - sectioned (current): each section is a <section> whose first child is
+//     its heading, <div class="mw-heading mw-heading2"><h2>…</h2></div>;
+//   - flat (older): headings and their content are siblings at the top level.
 func removeBackMatter(article *goquery.Selection) {
+	article.Find("section").Each(func(_ int, section *goquery.Selection) {
+		if heading := section.ChildrenFiltered("div.mw-heading2, h2").First(); isBackMatter(heading) {
+			section.Remove()
+		}
+	})
 	inBackMatter := false
 	article.Children().Each(func(_ int, block *goquery.Selection) {
 		if isTopLevelHeading(block) {
-			inBackMatter = backMatterHeadings[strings.ToLower(normalizeSpace(block.Text()))]
+			inBackMatter = isBackMatter(block)
 		}
 		if inBackMatter {
 			block.Remove()
 		}
 	})
+}
+
+// isBackMatter reports whether heading names a back-matter section.
+func isBackMatter(heading *goquery.Selection) bool {
+	return heading.Length() > 0 && backMatterHeadings[strings.ToLower(normalizeSpace(heading.Text()))]
 }
 
 func isTopLevelHeading(block *goquery.Selection) bool {

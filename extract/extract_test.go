@@ -42,19 +42,24 @@ Computer science
 Learning
 The reward is r_{t}<1 per step.`
 
+// The same article in both shapes of MediaWiki markup: flat (headings and
+// content as siblings) and sectioned (each section in a <section>), the shape
+// the live pages use. Both must give exactly the same text.
 func TestWikipediaArticleKeepsProseOnly(t *testing.T) {
-	page, err := WikipediaArticle{}.Extract(loadDocument(t, "testdata/article.html"))
-	if err != nil {
-		t.Fatalf("Extract: %v", err)
-	}
-	if page.Title != "Robotics" {
-		t.Errorf("Title = %q, want %q", page.Title, "Robotics")
-	}
-	if page.RevisionID != 1254321987 {
-		t.Errorf("RevisionID = %d, want 1254321987", page.RevisionID)
-	}
-	if page.Text != wantArticleText {
-		t.Errorf("Text mismatch\n got:\n%s\nwant:\n%s", page.Text, wantArticleText)
+	for _, fixture := range []string{"testdata/article.html", "testdata/article-sections.html"} {
+		page, err := WikipediaArticle{}.Extract(loadDocument(t, fixture))
+		if err != nil {
+			t.Fatalf("%s: Extract: %v", fixture, err)
+		}
+		if page.Title != "Robotics" {
+			t.Errorf("%s: Title = %q, want %q", fixture, page.Title, "Robotics")
+		}
+		if page.RevisionID != 1254321987 {
+			t.Errorf("%s: RevisionID = %d, want 1254321987", fixture, page.RevisionID)
+		}
+		if page.Text != wantArticleText {
+			t.Errorf("%s: Text mismatch\n got:\n%s\nwant:\n%s", fixture, page.Text, wantArticleText)
+		}
 	}
 }
 
@@ -129,10 +134,6 @@ func TestByName(t *testing.T) {
 var (
 	citationMarker = regexp.MustCompile(`\[\d+\]`)
 	cssRule        = regexp.MustCompile(`[.#][\w-]+[^{}\n]*\{[^}]*\}`)
-	// A lower-case letter directly followed by an upper-case one is how glued
-	// blocks show up ("engineeringComputer"); a few real words do it too, so
-	// the test allows a small number per page.
-	gluedWords = regexp.MustCompile(`[a-z][A-Z][a-z]`)
 )
 
 func TestWikipediaArticleOnSavedPages(t *testing.T) {
@@ -164,11 +165,38 @@ func TestWikipediaArticleOnSavedPages(t *testing.T) {
 			if strings.Contains(page.Text, "[edit]") {
 				t.Error("text contains [edit]")
 			}
-			if glued := gluedWords.FindAllString(page.Text, -1); len(glued) > 5 {
-				t.Errorf("%d possible glued words, e.g. %q", len(glued), glued[:5])
+			for _, line := range strings.Split(page.Text, "\n") {
+				if backMatterHeadings[strings.ToLower(line)] {
+					t.Errorf("back-matter section kept: %q", line)
+				}
+			}
+			if glued := gluedBlockPairs(t, path, page.Text); len(glued) > 0 {
+				t.Errorf("%d neighbouring blocks run together, e.g. %q", len(glued), glued[0])
 			}
 		})
 	}
+}
+
+// gluedBlockPairs looks at every pair of neighbouring list items or
+// paragraphs in the page and reports those whose boundary words appear joined
+// in the text ("engineering"+"Computer" → "engineeringComputer"). Checking the
+// actual boundaries avoids flagging real names such as "iRobot" or "AlphaGo",
+// which a capital-letter pattern cannot tell apart (lesson L-W7-12).
+func gluedBlockPairs(t *testing.T, path, text string) []string {
+	doc := loadDocument(t, path)
+	var glued []string
+	doc.Find(contentSelector + " li + li, " + contentSelector + " p + p").Each(func(_ int, block *goquery.Selection) {
+		previous := strings.Fields(block.Prev().Text())
+		current := strings.Fields(block.Text())
+		if len(previous) == 0 || len(current) == 0 {
+			return
+		}
+		joined := previous[len(previous)-1] + current[0]
+		if len(joined) > 6 && strings.Contains(text, joined) {
+			glued = append(glued, joined)
+		}
+	})
+	return glued
 }
 
 // keepAlphanumeric maps punctuation to spaces, so "Android (robot)" and the

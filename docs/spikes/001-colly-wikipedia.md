@@ -135,3 +135,22 @@ was right that a contact is required, but wrong about which contact the site acc
 `.Text()` in the spike harness, not from Scrapy: Scrapy's `//text()` returns a *list* of fragments. The
 `AllText` extractor therefore joins fragments with spaces, staying faithful to Scrapy. CSS, `[edit]` and
 citation markers remain genuine differences.
+
+## Addendum C — 2026-11-08: the real pages (Part B complete)
+
+Ten pages were captured on the Mac (`testdata/wikipedia/MANIFEST.tsv`: 10 × HTTP 200, 205 KB to 1.56 MB,
+revision IDs recorded); `robots.txt` does not disallow `/wiki/`. Colly's *default* User-Agent got 200 on the
+probe, but the program does not use it (Art. 9.1). Running the extraction tests on them found:
+
+1. **The live markup is sectioned.** Each section is a `<section>` that starts with its heading. The
+   hand-built fixture (and the extractor) assumed flat markup, so *See also*, *References* and
+   *Further reading* were kept on every page. Seen as a citation-like `[2019]` in a *Further reading* entry.
+   Fixed: the extractor handles both shapes, and a sectioned synthetic fixture with exactly the same
+   expected text was added. This is the risk §3's caveat named: "the selectors must be confirmed on real pages".
+2. **The glued-words check was wrong, not the text.** A "lower-case then capital" pattern flagged real names
+   (RoboHon, iRobot, ImageNet, AlphaGo, MaxEnt). Replaced by a check of actual block boundaries:
+   for every neighbouring pair of list items or paragraphs, the last word of one joined to the first word
+   of the next must not occur in the text. Both new checks were mutation-tested.
+
+Result on the ten pages: the clean text keeps 29–47 % of the characters of the Scrapy-style extraction
+(exact figures are generated in README Table 4).

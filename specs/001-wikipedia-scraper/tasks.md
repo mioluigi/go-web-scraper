@@ -24,5 +24,5 @@
 | ✅ T14 | `scripts/tables.sh` + headline; spike addendum on P1–P3 | numbers match results | Claude |
 | ✅ T15 | Builds: macOS binary, `.exe`, `.app` | `.app` runs to completion | **Mac** | *`.app` ran to completion on the Mac: "Saved 10 of 10 pages" (2026-11-08 21:00).*
 | ✅ T16 | README (generated tables, licence credit, GenAI Tools) | prose re-check against tables | Claude |
-| T17 | Gemini repository review + triage | every finding decided | Luis + Claude |
+| ✅ T17 | Gemini repository review + triage | every finding decided | Luis + Claude | *Two attempts; 100/100; findings decided in docs/reviews/002-repository-review.md.*
 | 🔶 T18 | `scripts/acceptance.sh` on a fresh clone; dialogs + index; ACs ticked | all pass | **Mac** | *Acceptance 25/25 on a fresh clone (2026-11-08 20:54); dialogs pending.*

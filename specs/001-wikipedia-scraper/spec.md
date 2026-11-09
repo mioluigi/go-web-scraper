@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **DRAFT v1 — 2026-11-07** · awaiting Luis's answers to Q1–Q9 and Gemini spec review |
+| Status | **APPROVED v1 — 2026-11-08** (recommended answers to Q1–Q9 adopted under the deadline; see `docs/decisions.md`) |
 | Inputs | `docs/assignment-and-rubric.md` · `docs/constitution.md` · `docs/spikes/001-colly-wikipedia.md` |
 | Deadline | 2026-11-08 (plan and tasks drafted in parallel with review; nothing built before approval) |
 

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **DRAFT v1 — 2026-11-07** (not approved; nothing is built before approval) |
+| Status | **APPROVED v1 — 2026-11-08** |
 | Rule | One task = one commit, message starts with the ID. 🔴 = test written first and seen failing. **Mac** = Luis runs it. |
 
 | ID | Task | Verify | Where |

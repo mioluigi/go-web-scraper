@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | **DRAFT v1 — 2026-11-07** · written alongside the spec review; assumes the recommended answers to Q1–Q9 and changes if they change |
+| Status | **APPROVED v1 — 2026-11-08** |
 | Spec | `spec.md` (DRAFT v1) |
 
 ## 1. Shape of the code

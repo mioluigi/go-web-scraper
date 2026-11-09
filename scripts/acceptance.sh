@@ -52,7 +52,8 @@ check "-parallel 0 → exit 2" expect_status 2 "$binary" -parallel 0
 printf 'http://127.0.0.1:9/unreachable\n' > "$scratch/unreachable.txt"
 check "unreachable page → exit 1 and an errors file" bash -c \
   "\"$binary\" -urls \"$scratch/unreachable.txt\" -out \"$scratch/u.jl\" >/dev/null 2>&1; [ \$? -eq 1 ] && [ -s \"$scratch/u.errors.jl\" ]"
-check "Windows .exe and macOS binaries cross-compile" bash -c 'scripts/build.sh >/dev/null'
+check "Windows .exe and both macOS binaries are built in dist/" bash -c \
+  'rm -rf dist && scripts/build.sh >/dev/null && for f in go-web-scraper.exe go-web-scraper-macos-arm64 go-web-scraper-macos-amd64; do [ -s "dist/$f" ] || { echo "dist/$f missing"; exit 1; }; done'
 
 echo "Deliverables [D] [Doc] (AC-4, AC-8 to AC-10)"
 check "results/wikipedia.jl: 10 valid page records" go run ./cmd/checkjl -want 10 results/wikipedia.jl

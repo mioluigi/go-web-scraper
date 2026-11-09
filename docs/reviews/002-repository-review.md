@@ -28,3 +28,21 @@ versus 0.33 s concurrently". Those are the **whole-process** column of Table 2. 
 
 Re-run with every file attached as `.txt` and an instruction to **list the files received before
 reviewing** (prompt updated). Findings will be triaged below.
+
+## Attempt 2 — 2026-11-08 21:27 (all files in one text file with per-file headers)
+
+Gemini cited functions and table rows it could only know from the files (`newResults`,
+`CloseIdleConnections`, `errMissingContact`, the Table 4 sum), so the evidence arrived. **Score: 100/100**
+(20 on each criterion); S1–S6 and S8–S10 met; S7 "partly met / explained" (no Scrapy run, per Q8b).
+
+**Statements checked against the repository (§5.4):**
+- README numbers vs `results/tables.md` (§4 of the review): correct. The README's figures are inside the
+  generated block, and its prose quotes no numbers of its own.
+- "S9 … backed by archived dialogs": **not yet true at review time**. The PDFs were committed afterwards
+  (T18). Recorded as a statement ahead of the evidence (L-W6-06 again).
+
+| # | Severity | Finding | Test of the claim | Decision |
+|---|---|---|---|---|
+| 1 | Low | Supply a fallback contact (e.g. `grader@example.org`) when run non-interactively, so `go run .` works without setup. | The guardrail is real: without `SCRAPER_CONTACT` the program exits 2 and prints the fix (`TestRunRequiresAContactAddress`). A made-up address would tell Wikimedia that someone who does not exist runs the crawl. | **Reject the mechanism**: false identification breaks Wikimedia's policy and Constitution 9.1. **Accept the property**: a grader must know at once what to do. Already met by the message and the README's Quick start. Automated checks set their own address (`acceptance.sh`). |
+| 2 | Low | `acceptance.sh` should assert that `build.sh` produced the `.exe` and macOS binaries. | True: the old check only tested that `build.sh` exited 0. | **Accept**: the check now removes `dist/`, builds, and requires all three files. Tested on a passing build and on a build script with the Windows line deleted (`dist/go-web-scraper.exe missing`, exit 1). |
+| 3 | Low | `main.go` should re-validate the `.jl` file before reporting success. | Output comes from `encoding/json` through `jsonl.Writer`, whose tests prove one object per line, including text with newlines. `cmd/checkjl` validates both committed files in `acceptance.sh`. Re-reading in `main` would duplicate a tested guarantee and double the file I/O. | **Reject**: covered by the writer's tests and the acceptance check. |

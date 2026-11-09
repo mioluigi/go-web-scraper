@@ -89,6 +89,9 @@ section for every claim.
 carries a contact e-mail because Wikipedia refuses anything else (spike 001 addendum); the address is supplied
 at run time (`SCRAPER_CONTACT` or `-contact`), and any saved record of the User-Agent shows `<contact e-mail>`.
 (Commit metadata follows Luis's usual Git identity.)
+*Exception, decided 2026-11-08:* the exported Claude dialog (`docs/ai-dialogs/claude-build-dialog.pdf`, a
+required deliverable) shows the address where it was set and probed. Luis chose to keep it unredacted,
+because the same address is already public as the author of every commit.
 8.3 **(W7)** Saved Wikipedia pages and the `.jl` output are **CC BY-SA** content: the README credits
 Wikipedia and states the licence; fixtures record their source URL and capture date.
 8.4 Luis decides any history rewrite; it touches only our own commits.

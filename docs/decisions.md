@@ -2,6 +2,7 @@
 
 | Date | Decision | Reason | Documents updated |
 |---|---|---|---|
+| 2026-11-08 | The exported Claude dialog keeps Luis's e-mail address (3 places) unredacted | Required deliverable; the address is already public as every commit's author; Luis did not redact | constitution 8.2 |
 | 2026-11-08 | Extractor handles Wikipedia's sectioned markup; glued-words check replaced by a block-boundary check | Real pages (spike addendum C) | wikipedia.go, extract_test.go, sectioned fixture, mutation-checks |
 | 2026-11-08 | **User-Agent = `go-web-scraper/1.0 (<contact e-mail>)`**, the address supplied at run time (`SCRAPER_CONTACT` / `-contact`); the program and scripts refuse to run without it; saved probes redact it | Wikipedia returned 403 to every User-Agent with our github.com URL, and 200 to the e-mail form (spike 001 addendum A) | constitution 8.2, 9.1; crawler, main, capture/measure/acceptance/app scripts; README |
 | 2026-11-08 | Acceptance threshold for coverage set to **80 %** per package (spec AC-1 said 85 %) | `jsonl` is at 83 %: the untested lines are operating-system failure paths (`Sync`, `Close`, `Rename`) that cannot be triggered portably. The behaviour that matters (atomic replace, no stray temporary, record-numbered errors) is tested. | spec AC-1 (this entry), acceptance.sh |

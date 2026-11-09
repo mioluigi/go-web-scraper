@@ -154,3 +154,16 @@ probe, but the program does not use it (Art. 9.1). Running the extraction tests 
 
 Result on the ten pages: the clean text keeps 29–47 % of the characters of the Scrapy-style extraction
 (exact figures are generated in README Table 4).
+
+## Addendum D — 2026-11-08: predictions checked against the official run (`results/tables.md`)
+
+- **P1 (Scrapy is already concurrent): not tested.** The Scrapy program was not available (spec Q8b), so it
+  stays a hypothesis, stated as such in the README.
+- **P2 (the network dominates): held for a sequential crawl.** The offline crawl benchmark's time per crawl,
+  minus its simulated waiting, leaves a small CPU share per page next to the live time per page (Tables 2
+  and 3).
+- **P3 (×3–×6 live with 4–8 at a time): failed.** Live, 4 at a time gave the speed-up in the headline,
+  well below the prediction, while the offline benchmark at 4 came close to it. Wikipedia answered quickly
+  from its cache, so fixed costs weighed more: robots.txt first, connection set-up, CPU parsing, and the
+  largest page. These causes are likely but were not measured separately. Lesson: a speed-up prediction must
+  state the latency it assumes; ours silently assumed a slow network.

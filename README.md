@@ -115,12 +115,30 @@ Wikimedia's policy forbids that and so do we.
 Measured on Luis's Mac with `scripts/measure.sh`. **Everything between the markers is generated** from
 `results/` by `go run ./cmd/tables` and `scripts/readme.sh`; nothing is typed by hand.
 
+**What the numbers say.** Every figure below is in the generated tables; the sentences in this
+paragraph contain none of their own.
+- **Concurrency helps, and it helps most when the network is slow.** Offline, where every page waits
+  for a simulated network delay, throughput grows almost in step with the number of requests in flight
+  (headline, Table 3).
+- **Live, the gain was smaller than we predicted.** Wikipedia answered each request quickly from its
+  cache, so fixed costs took a larger share of the time: the robots.txt request before any page, connection
+  set-up, parsing the HTML on the CPU, and the largest page (*Applications of artificial intelligence*).
+  These are the likely causes, not measured separately. The spike predicted a larger
+  speed-up; addendum D records the miss, as SFEDD requires.
+- **Memory grows only a little** with four requests in flight (Table 2).
+- **The clean text is about a third of the Scrapy-style text** (Table 4). The rest is markup residue that a
+  knowledge base would otherwise have to filter out.
+- **Recommendation:** keep the per-site limit modest (4 is the default) to respect each site, and get speed
+  at scale from crawling **many sites at once**. The limit is per site, so total concurrency grows with the
+  number of sites while each site sees a polite load.
+
 <!-- tables:start -->
 **Headline (generated)**
 
 - Live crawl of the 10 pages on the Mac, median of 5 runs: **0.53 s** one page at a time, **0.30 s** with 4 at a time — **×1.7** faster (whole process: 0.56 s → 0.33 s).
 - Peak memory of the whole program: 41 MB (one at a time) and 48 MB (4 at a time).
 - The clean extraction keeps **37 %** of the characters of the Scrapy-style extraction (276,784 vs 751,602 characters over all pages); the rest is styles, citation markers, edit links, navigation boxes, tables and reference lists.
+- Offline, where every page waits 100 ms (simulated network): ×1.9 with 2 at a time, ×3.2 with 4 at a time, ×4.7 with 8 at a time, versus one at a time.
 
 **Table 1 — Machine**
 
@@ -170,7 +188,27 @@ measured: 2026-11-08 20:37 EST
 ## Go vs Scrapy
 
 <!-- scrapy:start -->
-*(Written after the measurements.)*
+**The original Scrapy program was not measured.** Its code is on a course page we could not obtain in time
+(spec decision Q8b). We did not write a Scrapy spider of our own and present it as the firm's.
+
+**The premise deserves a correction.** The firm believes its Scrapy program is slow because it fetches
+pages one after another. But Scrapy is asynchronous: by default it keeps up to 16 requests in flight, 8 per
+site, so on ten pages it is probably already concurrent (spike 001, prediction P1). A fair comparison
+therefore sets the **same** limits on both, turns caches off, times the **whole process** including start-up,
+and checks that both produce comparable text. The `alltext` extractor reproduces Scrapy's `//text()`
+output for exactly that comparison.
+
+**What our measurements do show:**
+- Go's start-up adds almost nothing: compare the "Crawl + write" and "Whole process" columns of Table 2.
+- Concurrency in Go speeds up the same crawl, and correctly: concurrent records are tested to be identical
+  to sequential ones.
+- The extracted text is cleaner than a Scrapy-style extraction (Table 4).
+
+**To add the comparison later:**
+1. Run the spider unchanged, five times, with `/usr/bin/time`.
+2. Write the times to `results/scrapy-timing.tsv` (columns `run`, `settings`, `process_s`; settings
+   `default`, then `per-domain-4`).
+3. Run `go run ./cmd/tables && scripts/readme.sh`. Table 2b and a headline line appear by themselves.
 <!-- scrapy:end -->
 
 ## Reusing it for another site
@@ -263,7 +301,26 @@ before relying on them.
 ## GenAI Tools
 
 <!-- genai:start -->
-*(Completed at the end.)*
+| Tool | Plan | Role |
+|---|---|---|
+| **Claude** (Claude Code in claude.ai, model Claude Opus 5.5) | Claude Pro | **Builder.** Wrote the intake, constitution, spike, spec, plan and tasks; all Go code and tests; the scripts; this README. Ran the workspace spike, mutation checks and the acceptance script's dry run. |
+| **Gemini** (web) | Gemini Ultra | **Independent reviewer.** Reviewed the finished repository against the rubric (prompt: `docs/reviews/002-repository-review-prompt.md`; review and triage: `docs/reviews/002-repository-review.md`). |
+
+**How the work was split.** Luis directed the work and made the decisions recorded in
+`docs/decisions.md`. He ran **every** live request and measurement on his Mac: Claude's workspace cannot
+reach Wikipedia (spike 001 §1). Claude pushed its commits directly, and verified each of Luis's pushes by
+pulling it before building on it.
+
+**What the AI got wrong, and how it was caught:**
+- The planned User-Agent (with a GitHub URL) was refused by Wikipedia. A seven-row live probe found the
+  accepted form (spike addendum A).
+- The hand-built test page had the wrong markup, and the real pages exposed it (addendum C).
+- A heuristic test flagged real names, and was replaced by a precise check.
+- A leak test hid the defect it was meant to catch, and a mutation check found it.
+
+All four are recorded as lessons in `docs/sfedd-notes.md`.
+
+**Conversation logs:** `docs/ai-dialogs/` (index in its `README.md`).
 <!-- genai:end -->
 
 ## Licence and credits

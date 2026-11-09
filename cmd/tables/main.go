@@ -77,6 +77,7 @@ func buildReport(dir string) (string, error) {
 
 	var out strings.Builder
 	writeHeadline(&out, live, clean, raw, scrapy)
+	writeOfflineHeadline(&out, benchmarks)
 	out.WriteString("\n**Table 1 — Machine**\n\n```\n" + strings.TrimSpace(string(machine)) + "\n```\n")
 	writeLiveTable(&out, live)
 	writeScrapyTable(&out, live, scrapy)
@@ -244,6 +245,39 @@ func writeHeadline(out *strings.Builder, live []liveSummary, clean, raw []pageSu
 		fmt.Fprintf(out, "- The original Scrapy program, unchanged, median **%.2f s** (whole process) versus **%.2f s** for "+
 			"Go with %d at a time.\n", original, fastest.processS, fastest.parallel)
 	}
+}
+
+// writeOfflineHeadline compares each parallel crawl benchmark with the one-at-a-time one.
+func writeOfflineHeadline(out *strings.Builder, benchmarks []benchmark) {
+	var baseline float64
+	var speedups []string
+	for _, b := range benchmarks {
+		parallel := parallelOf(b.name)
+		if parallel == 0 {
+			continue
+		}
+		if parallel == 1 {
+			baseline = b.pagesPerSecond
+			continue
+		}
+		if baseline > 0 {
+			speedups = append(speedups, fmt.Sprintf("×%.1f with %d at a time", b.pagesPerSecond/baseline, parallel))
+		}
+	}
+	if len(speedups) > 0 {
+		fmt.Fprintf(out, "- Offline, where every page waits 100 ms (simulated network): %s, versus one at a time.\n",
+			strings.Join(speedups, ", "))
+	}
+}
+
+// parallelOf reads N from a benchmark name such as "CrawlSavedPages/parallel=N-10"; 0 if absent.
+func parallelOf(name string) int {
+	_, after, found := strings.Cut(name, "parallel=")
+	if !found {
+		return 0
+	}
+	digits, _, _ := strings.Cut(after, "-")
+	return atoi(digits)
 }
 
 func writeLiveTable(out *strings.Builder, live []liveSummary) {

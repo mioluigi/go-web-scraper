@@ -3,6 +3,7 @@
 - Live crawl of the 10 pages on the Mac, median of 5 runs: **0.53 s** one page at a time, **0.30 s** with 4 at a time — **×1.7** faster (whole process: 0.56 s → 0.33 s).
 - Peak memory of the whole program: 41 MB (one at a time) and 48 MB (4 at a time).
 - The clean extraction keeps **37 %** of the characters of the Scrapy-style extraction (276,784 vs 751,602 characters over all pages); the rest is styles, citation markers, edit links, navigation boxes, tables and reference lists.
+- Offline, where every page waits 100 ms (simulated network): ×1.9 with 2 at a time, ×3.2 with 4 at a time, ×4.7 with 8 at a time, versus one at a time.
 
 **Table 1 — Machine**
 

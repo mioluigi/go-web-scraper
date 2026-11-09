@@ -21,7 +21,9 @@ func TestReportFromSyntheticResults(t *testing.T) {
 	write("timing.tsv", "run\tparallel\tprogram_ms\tprocess_s\tmax_rss_bytes\n"+
 		"1\t1\t4000\t4.1\t30000000\n1\t4\t1000\t1.1\t40000000\n2\t1\t6000\t6.1\t30000000\n"+
 		"2\t4\t1400\t1.5\t40000000\n3\t1\t5000\t5.1\t32000000\n3\t4\t1200\t1.3\t42000000\n")
-	write("benchmarks.txt", "goos: darwin\nBenchmarkCrawlSavedPages/parallel=1-10  1  1000000000 ns/op  10.0 pages/s  2048 B/op  1500 allocs/op\nPASS\n")
+	write("benchmarks.txt", "goos: darwin\nBenchmarkCrawlSavedPages/parallel=1-10  1  1000000000 ns/op  10.0 pages/s  2048 B/op  1500 allocs/op\n"+
+		"BenchmarkCrawlSavedPages/parallel=4-10  1  250000000 ns/op  38.0 pages/s  2048 B/op  1500 allocs/op\n"+
+		"BenchmarkWikipediaArticle-10  30  39000000 ns/op  256.0 pages/s  1 B/op  1 allocs/op\nPASS\n")
 	write("wikipedia.jl", `{"title":"Robot","text":"`+strings.Repeat("a", 30)+`","word_count":1}`+"\n")
 	write("wikipedia-alltext.jl", `{"title":"Robot","text":"`+strings.Repeat("b", 100)+`"}`+"\n")
 
@@ -37,6 +39,7 @@ func TestReportFromSyntheticResults(t *testing.T) {
 		"| CrawlSavedPages/parallel=1-10 | 10.0 | 1000 | 2 | 1,500 |",
 		"| Robot | 1 | 30 | 100 | 30 % |",
 		"No Scrapy measurements",
+		"(simulated network): ×3.8 with 4 at a time, versus one at a time.",
 	} {
 		if !strings.Contains(report, want) {
 			t.Errorf("report lacks %q\n%s", want, report)

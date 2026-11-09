@@ -276,7 +276,7 @@ func writeScrapyTable(out *strings.Builder, live []liveSummary, scrapy map[strin
 }
 
 func writeBenchmarkTable(out *strings.Builder, benchmarks []benchmark) {
-	out.WriteString("\n**Table 3 — Offline benchmark: saved pages, 100 ms simulated latency (`go test -bench`)**\n\n")
+	out.WriteString("\n**Table 3 — Offline benchmarks (`go test -bench`): crawling the saved pages with 100 ms simulated latency per page, and extraction alone**\n\n")
 	out.WriteString("| Benchmark | Pages/s | ms per crawl | KB allocated per crawl | Allocations per crawl |\n")
 	out.WriteString("|---|---:|---:|---:|---:|\n")
 	for _, b := range benchmarks {

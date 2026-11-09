@@ -1,0 +1,11 @@
+url	status	bytes	sha256	revision_id	captured_utc	file
+https://en.wikipedia.org/wiki/Robotics	200	823276	d410809b341a9b3edd6afd737022d9a820361ef92c241faa541e48f1dfead9c2	1383831322	2026-11-09T01:28:24Z	Robotics.html
+https://en.wikipedia.org/wiki/Robot	200	1080573	e1090ac833c16f71c6f3fb0a3e7054cb93dc1f3585182238f193b3c01d921161	1384144252	2026-11-09T01:28:25Z	Robot.html
+https://en.wikipedia.org/wiki/Reinforcement_learning	200	697993	5f89bfd3dc17917e7a43d7a7b5945f6ef03871f1904e3288edabf4c02da09d83	1382044619	2026-11-09T01:28:27Z	Reinforcement_learning.html
+https://en.wikipedia.org/wiki/Robot_Operating_System	200	556125	c1996e6c5b85e2b503d69bed0f2da3900d1a5f2242cdb06527fca0c611a6492a	1384472855	2026-11-09T01:28:28Z	Robot_Operating_System.html
+https://en.wikipedia.org/wiki/Intelligent_agent	200	335123	c188b8c8ad99fe34294330dba8a7be8d36094ecaba0a0a73bf2628a3d6751ddd	1384330283	2026-11-09T01:28:29Z	Intelligent_agent.html
+https://en.wikipedia.org/wiki/Software_agent	200	205022	4957af9b1d6e57ae25c90d34c739486fabe9222432e4a4baf90732a8f0873e65	1380799947	2026-11-09T01:28:31Z	Software_agent.html
+https://en.wikipedia.org/wiki/Robotic_process_automation	200	234803	917dd91868119e6db36cc7c766c8a96521b15919c40bfdd817259be0543a2049	1383697165	2026-11-09T01:28:32Z	Robotic_process_automation.html
+https://en.wikipedia.org/wiki/Chatbot	200	580769	0a4f07bf90dc08277759d593b6a9896b8f26b189db97b7e57a00e9beaa6b7bd6	1384318631	2026-11-09T01:28:33Z	Chatbot.html
+https://en.wikipedia.org/wiki/Applications_of_artificial_intelligence	200	1562820	0a22fe8ab8d337870f7324f7717236a4bc2bf5474cc5f75066abfab1f6946e8e	1384315209	2026-11-09T01:28:35Z	Applications_of_artificial_intelligence.html
+https://en.wikipedia.org/wiki/Android_(robot)	200	363932	2d820d0b78fadcdd1f44c916f0b5477fac7735906d3deec3f375d0ee896e121c	1384203714	2026-11-09T01:28:36Z	Android__robot_.html

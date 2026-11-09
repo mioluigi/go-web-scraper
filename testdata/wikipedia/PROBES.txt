@@ -1,0 +1,4 @@
+probe_utc=2026-11-09T01:28:39Z
+descriptive_user_agent=go-web-scraper/1.0 (<contact e-mail>)
+colly_default_user_agent_status=200
+robots_disallows_all_wiki=no

@@ -1,0 +1,14 @@
+# Mutation checks — 2026-11-09, Claude's workspace, go test -race per package
+# A mutation counts only if the package still compiles (SFEDD §5.5).
+caught ✅ | extract/wikipedia.go: '"sup.reference", ' → ''
+caught ✅ | extract/wikipedia.go: 'removeBackMatter(article)$' → ''
+caught ✅ | extract/text.go: 'separator = "\\n"' → 'separator = ""'
+caught ✅ | extract/wikipedia.go: 'article := content.Clone()' → 'article := content'
+caught ✅ | jsonl/jsonl.go: 'SetEscapeHTML(false)' → 'SetEscapeHTML(true)'
+caught ✅ | jsonl/jsonl.go: 'os.Remove(temporary.Name())' → ''
+caught ✅ | crawler/crawler.go: 'Parallelism: config.Parallelism' → 'Parallelism: 64'
+caught ✅ | crawler/crawler.go: 'collector.IgnoreRobotsTxt = config.IgnoreRobots' → 'collector.IgnoreRobotsTxt = true'
+SURVIVED ❌ | crawler/crawler.go: 'transport.CloseIdleConnections()' → ''  → test fixed (it closed the connections itself); re-run: caught ✅ (3 goroutines before, 123 after)
+caught ✅ | crawler/crawler.go: '	mu.Lock()' → '	'
+caught ✅ | main.go: 'return exitPagesFailed$' → 'return exitOK'
+caught ✅ | urllist/urllist.go: 'if seen\[text\] {' → 'if false {'

@@ -1,0 +1,17 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/mioluigi/go-web-scraper/crawler
+cpu: Apple M1 Max
+BenchmarkCrawlSavedPages/parallel=1-10         	       3	1073169083 ns/op	         9.318 pages/s	74192453 B/op	  548447 allocs/op
+BenchmarkCrawlSavedPages/parallel=2-10         	       3	 550344819 ns/op	        18.17 pages/s	74265538 B/op	  548484 allocs/op
+BenchmarkCrawlSavedPages/parallel=4-10         	       3	 334737806 ns/op	        29.87 pages/s	74400933 B/op	  548640 allocs/op
+BenchmarkCrawlSavedPages/parallel=8-10         	       3	 227639153 ns/op	        43.93 pages/s	74437578 B/op	  548866 allocs/op
+PASS
+ok  	github.com/mioluigi/go-web-scraper/crawler	9.529s
+goos: darwin
+goarch: arm64
+pkg: github.com/mioluigi/go-web-scraper/extract
+cpu: Apple M1 Max
+BenchmarkWikipediaArticle-10    	      27	  39095687 ns/op	       255.8 pages/s	19529809 B/op	  141328 allocs/op
+PASS
+ok  	github.com/mioluigi/go-web-scraper/extract	1.501s

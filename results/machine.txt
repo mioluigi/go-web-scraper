@@ -1,0 +1,5 @@
+machine: MacBookPro18,2 · Apple M1 Max · 64 GB · macOS 27.0.1
+cpus: 10
+go: go1.27.2
+commit: f7cbf1e
+measured: 2026-11-08 20:37 EST

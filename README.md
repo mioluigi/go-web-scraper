@@ -14,11 +14,14 @@ object per page** to a JSON Lines file, ready to load into the firm's knowledge 
 
 ## Quick start
 
-You need Go 1.24 or newer and an internet connection.
+You need Go 1.24 or newer, an internet connection, and an e-mail address. Wikipedia refuses automated
+requests that don't say who sends them, so the program puts your address in its User-Agent header. It is never
+written to any file.
 
 ```bash
 git clone https://github.com/mioluigi/go-web-scraper.git && cd go-web-scraper
-go run .                     # the ten built-in pages → results/wikipedia.jl
+export SCRAPER_CONTACT=you@example.org   # once per terminal (or pass -contact you@example.org)
+go run .                                 # the ten built-in pages → results/wikipedia.jl
 ```
 
 ```
@@ -29,8 +32,8 @@ Saved 10 of 10 pages to results/wikipedia.jl in … s.
 ```
 
 Ready-made programs: `scripts/build.sh` makes `dist/go-web-scraper.exe` (Windows) and macOS binaries;
-`scripts/build-macos-app.sh` makes `dist/WebScraper.app`. Double-click the app and it runs in Terminal, saving
-`~/Desktop/WebScraper-output/wikipedia.jl`.
+`scripts/build-macos-app.sh` makes `dist/WebScraper.app`. Double-click the app and it runs in Terminal, asks for
+the contact address, and saves `~/Desktop/WebScraper-output/wikipedia.jl`.
 
 | Option | Default | Meaning |
 |---|---|---|
@@ -41,6 +44,7 @@ Ready-made programs: `scripts/build.sh` makes `dist/go-web-scraper.exe` (Windows
 | `-timeout D` | `30s` | give up on a page after this long |
 | `-extract NAME` | `wikipedia` | `wikipedia` = clean article prose · `alltext` = every text node, like the Scrapy program |
 | `-cache DIR` | off | reuse pages saved in `DIR` (development only, never for timing) |
+| `-contact EMAIL` | `$SCRAPER_CONTACT` | **required**: the address sent in the User-Agent |
 
 The program checks its input before sending any request. A bad option, a missing file or a malformed URL
 gets a message naming the problem (with the line number) and **exit status 2**. If any page fails, the others
@@ -95,10 +99,16 @@ concurrent run. After each crawl, idle connections are closed, so no goroutine o
 mutation check showed that without this, 20 crawls left 120 goroutines behind.
 
 **Politeness** (Constitution, Article 9). Colly by default ignores `robots.txt`, sends a generic User-Agent,
-and has no request limit. This program changes all three. It **obeys robots.txt**. It sends a
-descriptive User-Agent in Wikimedia's format, `go-web-scraper/1.0 (https://github.com/mioluigi/go-web-scraper)
-colly/2.3.0 go1.x`, whose contact is this repository rather than an e-mail address. It stays on the sites in
-the list, and it sends at most 4 requests at a time per site by default.
+and has no request limit. This program changes all three: it **obeys robots.txt**, stays on the sites in the
+list, sends at most 4 requests at a time per site by default, and identifies itself as
+`go-web-scraper/1.0 (<your e-mail>)`.
+
+That last form was **measured, not assumed**. On 2026-11-08 Wikipedia answered **403** ("Please set a user-agent
+and respect our robot policy") to every User-Agent that carried this repository's `github.com` URL, with or
+without an e-mail address added, and to the capture script's first attempt. It answered **200** to the e-mail
+address alone, and to the example from its own policy page. The evidence is in
+`docs/spikes/001-colly-wikipedia.md` (addendum A). A browser-imitating User-Agent also got 200, but
+Wikimedia's policy forbids that and so do we.
 
 ## Results
 

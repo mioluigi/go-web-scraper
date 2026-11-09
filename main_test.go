@@ -30,6 +30,23 @@ func siteWithArticles(t *testing.T) *testsite.Site {
 	return site
 }
 
+func TestMain(m *testing.M) {
+	os.Setenv(contactVariable, "tests@example.org") // every run needs a contact; one test removes it
+	os.Exit(m.Run())
+}
+
+func TestRunRequiresAContactAddress(t *testing.T) {
+	for _, contact := range []string{"", "https://github.com/mioluigi/go-web-scraper", "not-an-address"} {
+		var console bytes.Buffer
+		if status := run([]string{"-contact", contact}, &console); status != exitUnusableArgs {
+			t.Errorf("contact %q: status %d, want %d", contact, status, exitUnusableArgs)
+		}
+		if !strings.Contains(console.String(), "export SCRAPER_CONTACT=you@example.org") {
+			t.Errorf("contact %q: message does not explain the fix:\n%s", contact, console.String())
+		}
+	}
+}
+
 func writeList(t *testing.T, lines ...string) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "urls.txt")

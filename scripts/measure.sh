@@ -14,6 +14,7 @@ RUNS="${RUNS:-5}"
 PAUSE="${PAUSE:-3}"
 fail() { echo "measure: $*" >&2; exit 1; }
 
+case "${SCRAPER_CONTACT:-}" in *@*.*) ;; *) fail "set SCRAPER_CONTACT to your e-mail address first (Wikipedia requires it)." ;; esac
 [ "$(uname -s)" = "Darwin" ] || fail "official measurements run on the Mac (this is $(uname -s))."
 [ -z "$(git status --porcelain)" ] || fail "uncommitted changes — commit or stash them, then run again."
 git fetch -q origin

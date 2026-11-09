@@ -85,17 +85,19 @@ section for every claim.
 ## Article 8 — Data and privacy
 
 8.1 Inputs and fixtures pass the data gate (`scripts/check-inputs.sh`) before their first commit.
-8.2 **(W7)** No personal email address appears in committed **files** or in the program's traffic: the
-User-Agent's contact field is the public repository URL, not an inbox. (Commit metadata follows Luis's usual
-Git identity.)
+8.2 **(W7, amended 2026-11-08)** No personal e-mail address appears in committed **files**. The User-Agent
+carries a contact e-mail because Wikipedia refuses anything else (spike 001 addendum); the address is supplied
+at run time (`SCRAPER_CONTACT` or `-contact`), and any saved record of the User-Agent shows `<contact e-mail>`.
+(Commit metadata follows Luis's usual Git identity.)
 8.3 **(W7)** Saved Wikipedia pages and the `.jl` output are **CC BY-SA** content: the README credits
 Wikipedia and states the licence; fixtures record their source URL and capture date.
 8.4 Luis decides any history rewrite; it touches only our own commits.
 
 ## Article 9 — Respect for the target site **(W7, new)**
 
-9.1 The crawler identifies itself with a descriptive User-Agent in the Wikimedia format
-`<client>/<version> (<contact>) <library>/<version>`; never a browser imitation, never the library default.
+9.1 The crawler identifies itself with a descriptive User-Agent, `go-web-scraper/<version> (<contact e-mail>)`
+— the form Wikipedia was measured to accept; never a browser imitation, never the library default. Without a
+contact address it refuses to run.
 9.2 It **obeys `robots.txt`** and stays on the allowed domains.
 9.3 It **bounds parallelism per domain** and supports a delay; defaults are modest, and the README states
 them.

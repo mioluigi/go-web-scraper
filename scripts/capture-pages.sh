@@ -4,6 +4,7 @@
 # Usage:  scripts/capture-pages.sh [urls-file] [output-dir]
 #         defaults: urls.txt  testdata/wikipedia
 #
+# Needs SCRAPER_CONTACT (an e-mail address) in the environment.
 # Fetches one page at a time with a descriptive User-Agent and a pause between requests, so the
 # tests can run offline forever after. Writes <output-dir>/MANIFEST.tsv with, per page: URL, HTTP
 # status, bytes, SHA-256, Wikipedia revision ID, capture time (UTC). Also saves robots.txt and the
@@ -14,11 +15,18 @@ set -euo pipefail
 URLS_FILE="${1:-urls.txt}"
 OUT_DIR="${2:-testdata/wikipedia}"
 PAUSE_SECONDS="${PAUSE_SECONDS:-1}"
-CONTACT_URL="${CONTACT_URL:-https://github.com/mioluigi/go-web-scraper}"
-USER_AGENT="go-web-scraper-capture/0.1 (${CONTACT_URL}) curl/$(curl --version | awk 'NR==1{print $2}')"
 COLLY_DEFAULT_UA="colly - https://github.com/gocolly/colly"
 
 fail() { echo "capture-pages: $*" >&2; exit 1; }
+
+# Wikipedia requires a contact e-mail in the User-Agent (spike 001 addendum: it refused our
+# github.com URL). The address comes from the environment and is never written to a file.
+CONTACT="${SCRAPER_CONTACT:-}"
+case "$CONTACT" in
+  *@*.*) ;;
+  *) fail "set SCRAPER_CONTACT to your e-mail address first, e.g.  export SCRAPER_CONTACT=you@example.org" ;;
+esac
+USER_AGENT="go-web-scraper/1.0 (${CONTACT})"
 
 [ -f "$URLS_FILE" ] || fail "URL list '$URLS_FILE' not found. Run from the repository root, or pass the file."
 command -v curl >/dev/null || fail "curl is not installed."
@@ -58,7 +66,7 @@ sleep "$PAUSE_SECONDS"
 default_ua_status=$(curl -sS -o /dev/null -A "$COLLY_DEFAULT_UA" -w '%{http_code}' "$first_url" || echo "error")
 {
   echo "probe_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  echo "descriptive_user_agent=$USER_AGENT"
+  echo "descriptive_user_agent=go-web-scraper/1.0 (<contact e-mail>)"
   echo "colly_default_user_agent_status=$default_ua_status"
   echo "robots_disallows_all_wiki=$(grep -qx 'Disallow: /wiki/' "$OUT_DIR/robots.txt" && echo yes || echo no)"
 } > "$OUT_DIR/PROBES.txt"

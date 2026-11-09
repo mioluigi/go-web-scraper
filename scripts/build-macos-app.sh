@@ -3,7 +3,7 @@
 #
 # The program is a command-line tool and a double-clicked app has no terminal, so the bundle is
 # a thin wrapper: its launcher opens Terminal and runs the program on the ten built-in Wikipedia
-# pages, writing ~/Desktop/WebScraper-output/wikipedia.jl, and waits for Return so the summary
+# pages (asking for the contact e-mail Wikipedia requires), writing ~/Desktop/WebScraper-output/wikipedia.jl, and waits for Return so the summary
 # stays on screen. The program itself is unchanged.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -17,6 +17,12 @@ cat >"$app/Contents/Resources/run-in-terminal.command" <<'SCRIPT'
 clear
 program="$(dirname "$0")/go-web-scraper"
 output="$HOME/Desktop/WebScraper-output/wikipedia.jl"
+if [ -z "${SCRAPER_CONTACT:-}" ]; then
+  echo "Wikipedia asks automated tools for a contact e-mail address (sent only in the request header)."
+  read -r -p "Your e-mail address: " SCRAPER_CONTACT
+  export SCRAPER_CONTACT
+  echo
+fi
 echo "Fetching ten Wikipedia articles on intelligent systems and robotics, four at a time,"
 echo "and saving their text as JSON Lines."
 echo

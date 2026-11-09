@@ -21,6 +21,8 @@ coverage_at_least() { # coverage_at_least MIN package
   awk -v c="${line//[^0-9.]/}" -v min="$1" 'BEGIN { if (c + 0 < min) { print "coverage " c "% < " min "%"; exit 1 } }'
 }
 
+# The binary needs a contact address; these checks send no request to Wikipedia.
+export SCRAPER_CONTACT="${SCRAPER_CONTACT:-acceptance@example.org}"
 scratch=$(mktemp -d)
 binary="$scratch/go-web-scraper"
 echo "Acceptance checks on $(git rev-parse --short HEAD) ($(go version | awk '{print $3}'))"
@@ -42,6 +44,7 @@ check "extraction quality tests ran on the ten saved pages (not skipped)" \
 echo "Application [A] (AC-5, on the built binary)"
 check "builds" go build -o "$binary" .
 check "-h explains usage, exit 0" expect_status 0 "$binary" -h
+check "no contact e-mail → exit 2" expect_status 2 env -u SCRAPER_CONTACT "$binary"
 check "missing URL file → exit 2" expect_status 2 "$binary" -urls "$scratch/missing.txt"
 printf 'www.example.org/no-scheme\n' > "$scratch/bad.txt"
 check "malformed URL → exit 2" expect_status 2 "$binary" -urls "$scratch/bad.txt"

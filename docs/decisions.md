@@ -2,6 +2,7 @@
 
 | Date | Decision | Reason | Documents updated |
 |---|---|---|---|
+| 2026-11-08 | **User-Agent = `go-web-scraper/1.0 (<contact e-mail>)`**, the address supplied at run time (`SCRAPER_CONTACT` / `-contact`); the program and scripts refuse to run without it; saved probes redact it | Wikipedia returned 403 to every User-Agent with our github.com URL, and 200 to the e-mail form (spike 001 addendum A) | constitution 8.2, 9.1; crawler, main, capture/measure/acceptance/app scripts; README |
 | 2026-11-08 | Acceptance threshold for coverage set to **80 %** per package (spec AC-1 said 85 %) | `jsonl` is at 83 %: the untested lines are operating-system failure paths (`Sync`, `Close`, `Rename`) that cannot be triggered portably. The behaviour that matters (atomic replace, no stray temporary, record-numbered errors) is tested. | spec AC-1 (this entry), acceptance.sh |
 | 2026-11-08 | FR-2's "host outside the allowed domains" check is met by construction: the allowed hosts **are** the hosts in the list, and the crawler refuses redirects or requests to any other host | A separate domain flag would add input with no use for this assignment | crawler.go |
 | 2026-11-08 | Fixed the goroutine-leak test: it closed the server's connections itself, which hid a missing `CloseIdleConnections` (mutation survived, then caught: 3 goroutines before, 123 after) | A test's own clean-up must not do the job of the code under test | crawler_test.go, docs/mutation-checks.txt |

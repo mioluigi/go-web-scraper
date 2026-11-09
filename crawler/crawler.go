@@ -4,8 +4,8 @@
 // exits the program: give it URLs, a Config and an Extractor, and it returns
 // one Result per URL, in the order of the URLs.
 //
-// The crawler is polite by default (Constitution, Article 9): it identifies
-// itself, obeys robots.txt, stays on the hosts of the given URLs, and limits
+// The crawler is polite by default (Constitution, Article 9): it requires a
+// User-Agent that identifies whoever runs it, obeys robots.txt, stays on the hosts of the given URLs, and limits
 // how many requests are in flight to each host.
 package crawler
 
@@ -16,7 +16,7 @@ import (
 	"mime"
 	"net/http"
 	"net/url"
-	"runtime"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -30,13 +30,23 @@ import (
 // Version is the scraper's version, part of its User-Agent.
 const Version = "1.0"
 
-// ContactURL is where a site operator can learn who runs this crawler. It is
-// a public page rather than an e-mail address (Constitution 8.2).
-const ContactURL = "https://github.com/mioluigi/go-web-scraper"
+// UserAgent identifies the crawler and how to reach the person running it, in
+// the form Wikimedia accepts: "go-web-scraper/1.0 (name@example.org)".
+//
+// Measured on 2026-11-08 (spike 001, addendum): Wikipedia answered 403 to every
+// User-Agent that carried this repository's github.com URL, with or without an
+// e-mail address, and 200 to the e-mail address alone. The contact is therefore
+// an e-mail address supplied at run time and never stored in the repository
+// (Constitution 8.2).
+func UserAgent(contactEmail string) string {
+	return fmt.Sprintf("go-web-scraper/%s (%s)", Version, contactEmail)
+}
 
-// DefaultUserAgent follows the Wikimedia format
-// <client>/<version> (<contact>) <library>/<version>.
-var DefaultUserAgent = fmt.Sprintf("go-web-scraper/%s (%s) colly/2.3.0 %s", Version, ContactURL, runtime.Version())
+var emailPattern = regexp.MustCompile(`^[^@\s();]+@[^@\s();]+\.[^@\s();]+$`)
+
+// ValidContact reports whether contactEmail looks like an e-mail address that
+// can go inside the User-Agent's parentheses.
+func ValidContact(contactEmail string) bool { return emailPattern.MatchString(contactEmail) }
 
 // Config controls one crawl. Start from DefaultConfig.
 type Config struct {
@@ -54,8 +64,9 @@ type Config struct {
 }
 
 // DefaultConfig returns the settings the command-line program starts from.
+// UserAgent is left empty on purpose: the caller must say who runs the crawl.
 func DefaultConfig() Config {
-	return Config{Parallelism: 4, Timeout: 30 * time.Second, UserAgent: DefaultUserAgent}
+	return Config{Parallelism: 4, Timeout: 30 * time.Second}
 }
 
 // Result is the outcome for one URL: a Page, or an error saying why not.
@@ -72,7 +83,7 @@ func (result Result) OK() bool { return result.Err == nil }
 var (
 	ErrNoURLs           = errors.New("crawler: no URLs to crawl")
 	ErrBadParallelism   = errors.New("crawler: parallelism must be at least 1")
-	ErrMissingUserAgent = errors.New("crawler: a User-Agent is required")
+	ErrMissingUserAgent = errors.New("crawler: a User-Agent is required (see UserAgent)")
 )
 
 // indexKey stores a request's position in the URL list in Colly's request context.

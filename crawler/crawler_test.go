@@ -65,8 +65,11 @@ func urlsOn(site *testsite.Site, paths ...string) []string {
 	return urls
 }
 
+var testUserAgent = UserAgent("tests@example.org")
+
 func testConfig(parallelism int) Config {
 	config := DefaultConfig()
+	config.UserAgent = testUserAgent
 	config.Parallelism = parallelism
 	return config
 }
@@ -175,11 +178,20 @@ func TestRobotsTxtIsObeyedAndUserAgentIsSent(t *testing.T) {
 		t.Errorf("site received %d page requests, want 1 (the disallowed page must not be fetched)", site.PageRequests())
 	}
 	agents := site.UserAgents()
-	if len(agents) != 1 || agents[0] != DefaultUserAgent {
-		t.Errorf("User-Agents seen = %q, want only %q", agents, DefaultUserAgent)
+	if len(agents) != 1 || agents[0] != "go-web-scraper/1.0 (tests@example.org)" {
+		t.Errorf("User-Agents seen = %q, want only the form Wikipedia accepted", agents)
 	}
-	if !strings.HasPrefix(DefaultUserAgent, "go-web-scraper/"+Version+" ("+ContactURL+") colly/") {
-		t.Errorf("DefaultUserAgent %q does not follow <client>/<version> (<contact>) <library>/<version>", DefaultUserAgent)
+}
+
+func TestValidContact(t *testing.T) {
+	for contact, want := range map[string]bool{
+		"luis@example.org": true, "a.b+c@gids.co": true,
+		"": false, "luis": false, "luis@localhost": false, "https://github.com/x": false,
+		"a@b.c (x)": false, "a@b.c; d@e.f": false, "two words@x.org": false,
+	} {
+		if got := ValidContact(contact); got != want {
+			t.Errorf("ValidContact(%q) = %v, want %v", contact, got, want)
+		}
 	}
 }
 
@@ -220,14 +232,15 @@ func TestOnResultIsCalledOncePerURL(t *testing.T) {
 }
 
 func TestCrawlRejectsUnusableSettings(t *testing.T) {
-	noUserAgent := DefaultConfig()
+	noUserAgent := testConfig(4)
 	noUserAgent.UserAgent = " "
 	cases := []struct {
 		urls   []string
 		config Config
 		want   error
 	}{
-		{nil, DefaultConfig(), ErrNoURLs},
+		{nil, testConfig(4), ErrNoURLs},
+		{[]string{"http://example.org/"}, DefaultConfig(), ErrMissingUserAgent},
 		{[]string{"http://example.org/"}, testConfig(0), ErrBadParallelism},
 		{[]string{"http://example.org/"}, noUserAgent, ErrMissingUserAgent},
 	}
@@ -236,7 +249,7 @@ func TestCrawlRejectsUnusableSettings(t *testing.T) {
 			t.Errorf("Crawl(%v) err = %v, want %v", c.urls, err, c.want)
 		}
 	}
-	if _, err := Crawl([]string{"not a url"}, DefaultConfig(), extract.WikipediaArticle{}); err == nil {
+	if _, err := Crawl([]string{"not a url"}, testConfig(4), extract.WikipediaArticle{}); err == nil {
 		t.Error("want an error for a URL without a host")
 	}
 }

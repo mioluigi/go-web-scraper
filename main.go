@@ -43,6 +43,15 @@ const (
 	defaultOutput  = "results/wikipedia.jl"
 )
 
+// contactVariable names the environment variable holding the contact e-mail.
+const contactVariable = "SCRAPER_CONTACT"
+
+// errMissingContact explains the one setting with no usable default.
+var errMissingContact = errors.New("a contact e-mail address is required.\n" +
+	"Wikipedia refuses automated requests that do not say who is sending them. Set it once per terminal:\n" +
+	"  export " + contactVariable + "=you@example.org\n" +
+	"or pass -contact you@example.org. It is sent only in the User-Agent header and never saved")
+
 // options are the command-line settings after validation.
 type options struct {
 	urlsFile  string // "" means the built-in list
@@ -104,6 +113,7 @@ func parseOptions(arguments []string, console io.Writer) (options, error) {
 	timeout := flags.Duration("timeout", defaults.Timeout, "give up on a page after this long")
 	extractorName := flags.String("extract", "wikipedia", "what to keep: "+strings.Join(extract.Names(), " | ")+" (alltext = every text node, like the Scrapy program)")
 	cacheDir := flags.String("cache", "", "reuse pages saved in this folder (development only; never for timing)")
+	contact := flags.String("contact", os.Getenv(contactVariable), "your e-mail address, sent in the User-Agent as Wikipedia requires (default: $"+contactVariable+")")
 	flags.Usage = func() { printUsage(flags) }
 	if err := flags.Parse(arguments); err != nil {
 		return options{}, err
@@ -129,18 +139,24 @@ func parseOptions(arguments []string, console io.Writer) (options, error) {
 		return options{}, fmt.Errorf("-out should end in .jl (JSON Lines), not %q", *output)
 	}
 
+	if !crawler.ValidContact(*contact) {
+		return options{}, errMissingContact
+	}
+
 	settings := options{urlsFile: *urlsFile, output: *output, extractor: extractor, crawl: defaults}
 	settings.crawl.Parallelism = *parallel
 	settings.crawl.Delay = *delay
 	settings.crawl.Timeout = *timeout
 	settings.crawl.CacheDir = *cacheDir
+	settings.crawl.UserAgent = crawler.UserAgent(*contact)
 	return settings, nil
 }
 
 func printUsage(flags *flag.FlagSet) {
 	out := flags.Output()
 	fmt.Fprintln(out, "go-web-scraper — fetch web pages concurrently and save their text as JSON Lines.")
-	fmt.Fprintln(out, "\nUsage:\n  go-web-scraper                         the ten built-in Wikipedia pages → "+defaultOutput)
+	fmt.Fprintln(out, "\nUsage:\n  export "+contactVariable+"=you@example.org   once: Wikipedia requires a contact address")
+	fmt.Fprintln(out, "  go-web-scraper                         the ten built-in Wikipedia pages → "+defaultOutput)
 	fmt.Fprintln(out, "  go-web-scraper -urls my-list.txt -out results/mine.jl\n\nOptions:")
 	flags.PrintDefaults()
 	fmt.Fprintln(out, "\nExit status: 0 all pages saved · 1 some pages failed · 2 bad options or URL list.")

@@ -99,3 +99,39 @@ Q1); the script is in `scripts/capture-pages.sh`.
 
 The spike is complete when the manifest, robots result, default-UA status and Scrapy information are
 committed, and the extraction selectors from §3 are re-checked on the real pages (addendum to this file).
+
+---
+
+## Addendum A — 2026-11-08: Wikipedia's User-Agent rule, measured on the Mac
+
+The first live request of Part B (`capture-pages.sh`, User-Agent `go-web-scraper-capture/0.1
+(https://github.com/mioluigi/go-web-scraper) curl/8.x`) was refused: **HTTP 403**, body *"Please set a
+user-agent and respect our robot policy https://w.wiki/4wJS. See also
+https://phabricator.wikimedia.org/T400119."* (Wikimedia's 2025 enforcement of its User-Agent policy). Single
+requests to `https://en.wikipedia.org/wiki/Robotics` from Luis's Mac, about one second apart:
+
+| User-Agent sent | Status |
+|---|---|
+| `Mozilla/5.0` (browser imitation; for comparison only) | 200 |
+| `go-web-scraper/1.0 (https://github.com/mioluigi/go-web-scraper)` | **403** |
+| `go-web-scraper/1.0 (+https://github.com/mioluigi/go-web-scraper)` | **403** |
+| `go-web-scraper/1.0 (https://github.com/mioluigi/go-web-scraper) colly/2.3.0` | **403** |
+| `go-web-scraper/1.0 (https://github.com/mioluigi/go-web-scraper; <e-mail>)` | **403** |
+| `CoolBot/0.0 (https://example.org/coolbot/; coolbot@example.org)` (the policy page's example) | 200 |
+| `go-web-scraper/1.0 (<e-mail>)` | **200** |
+
+**Finding.** In this test, every agent carrying our `github.com` repository URL was refused, even with an
+e-mail address added. A URL on another domain plus an e-mail passed, and so did the e-mail address alone. We
+do not know Wikimedia's rule, only this behaviour. We adopt the form that passed:
+`go-web-scraper/1.0 (<e-mail>)`, with the address supplied at run time (Constitution 8.2 and 9.1 amended).
+
+**Correction to §2 and to the constitution as first drafted.** We planned a repository URL as the contact so
+that no e-mail address would be needed. The live site ruled that out. The spike's reading of the policy page
+was right that a contact is required, but wrong about which contact the site accepts.
+
+## Addendum B — correction to §3
+
+§3 listed "words glued together" as a defect of the Scrapy-style extraction. That came from goquery's
+`.Text()` in the spike harness, not from Scrapy: Scrapy's `//text()` returns a *list* of fragments. The
+`AllText` extractor therefore joins fragments with spaces, staying faithful to Scrapy. CSS, `[edit]` and
+citation markers remain genuine differences.

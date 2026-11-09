@@ -13,6 +13,9 @@ each) and a **senior Go engineer** who has run production web crawlers. Review t
 for the Week 7 assignment (a Go/Colly scraper of ten Wikipedia pages writing a JSON Lines file). The
 submission is due tonight, so only changes that take under 20 minutes are actionable.
 
+**Before anything else, list every file you received**, by name. If any file named above is missing,
+stop and say which.
+
 Report, in this order:
 
 1. **Score each rubric criterion** (0/5/10/15/20) with the evidence for it.
